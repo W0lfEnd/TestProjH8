@@ -8,9 +8,6 @@ ProjectSettings/AndroidLogcatSettings.asset
 !.gitattributes
 !.editorconfig
 !Assets/
-!DebugKeystore/
-!Documentation/
 !Packages/
 !ProjectSettings/
-!GoogleSheetsTool/
 !Plugins/

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,7 +45,6 @@ public class PlayerInput : MonoBehaviour
   {
     CurrentHorizontalInput = playerInput.getHorizontalAxisInput() * _horizontalSensitivity;
     CurrentVerticalInput = playerInput.getVerticalAxisInput() * _verticalSensitivity;
-    //CurrentVerticalInput = _verticalSensitivity;
   }
 
   private PlayerInputType getDefaultInputType()

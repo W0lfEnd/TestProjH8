@@ -1,3 +1,4 @@
+using System;
 using Bitgem.VFX.StylisedWater;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -9,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
   [Header( "References" )]
   [SerializeField] public Rigidbody _rigidbody;
   [SerializeField] private Transform _forwardForcePoint;
-  [SerializeField] private Transform _torqueForcePoint;
+  [SerializeField] private Transform _modelTransform;
 
   [FormerlySerializedAs( "RawInputSpeed" )]
   [Header( "Input values" )]
@@ -17,17 +18,17 @@ public class PlayerMovement : MonoBehaviour
   [SerializeField] public float RawInputRotationAngle = 0.0f;
 
   [Header( "Rotation" )]
-  [SerializeField] private float _rotationForceMultiplier = 8.0f;
-  [SerializeField] private float _rotationAngleMultiplier = 40.0f;
-  [SerializeField] private float _maxRotationAngle        = 180f;
+  [SerializeField] private float _rotationAngleSpeed = 40.0f;
+  [SerializeField] private float _rotationAngleMax            = 40.0f;
+  [SerializeField] private float _maxDeepForForwardForcePoint = 0.4f;
 
   [Header( "Move Forward" )]
   [SerializeField] private float _speedForceMultiplier = 12.0f;
   [SerializeField] private float _maxVelocity = 1000f;
-  private float InputSpeedForce => RawInputSpeedForce * _speedForceMultiplier;
   #endregion
 
   #region Public Properties
+  public bool      CanMove   { get; set; }
   public Rigidbody Rigidbody => _rigidbody;
 
   public float ForwardSpeed
@@ -41,14 +42,24 @@ public class PlayerMovement : MonoBehaviour
   }
   #endregion
 
+  #region Private Fields
+  private float   InputSpeedForce => RawInputSpeedForce * _speedForceMultiplier;
+  private Vector3 _forwardForcePointStartPos = default;
+  #endregion
+
 
   #region Unity Methods
+  private void Awake()
+  {
+    _forwardForcePointStartPos = _forwardForcePoint.localPosition;
+  }
+
   private void FixedUpdate()
   {
     tryRotate();
 
     //If our engine is out of water
-    if ( _forwardForcePoint.position.y >= WaterVolumeHelper.Instance.GetHeight( _forwardForcePoint.position ) )
+    if ( !CanMove )
       return;
 
     tryMove();
@@ -58,11 +69,6 @@ public class PlayerMovement : MonoBehaviour
   {
     Gizmos.color = Color.black;
     Gizmos.DrawWireSphere( _forwardForcePoint.position, 0.1f );
-
-    Gizmos.color = Color.white;
-    Gizmos.DrawWireSphere( _torqueForcePoint.position, 0.1f );
-
-    Gizmos.DrawLine( _torqueForcePoint.position, _torqueForcePoint.position - getRotationDirection() );
   }
   #endregion
 
@@ -75,16 +81,14 @@ public class PlayerMovement : MonoBehaviour
 
   private void tryRotate()
   {
-    if ( RawInputRotationAngle != 0.0f )
-      _rigidbody.AddForceAtPosition( getRotationDirection() * _rotationForceMultiplier, _torqueForcePoint.position );
-  }
+    float   targetRotationAngle = RawInputRotationAngle * _rotationAngleMax;
+    Vector3 curEulers     = _modelTransform.rotation.eulerAngles;
 
-  private Vector3 getRotationDirection()
-  {
-    float moveVelocitySign = Mathf.Sign( InputSpeedForce );
-    float applyRotationForce = -Mathf.Clamp( moveVelocitySign * RawInputRotationAngle * _rotationAngleMultiplier, -_maxRotationAngle, _maxRotationAngle );
+    Vector3 targetEulers = curEulers.setZ( -targetRotationAngle );
+    _modelTransform.rotation = Quaternion.Slerp(_modelTransform.rotation, Quaternion.Euler( targetEulers ), _rotationAngleSpeed * Time.fixedDeltaTime);
 
-    return Quaternion.AngleAxis( applyRotationForce, _rigidbody.transform.up ) * _rigidbody.transform.forward;
+    float normalizedRotationDiff = Vector3.Angle( Vector3.up, _modelTransform.up ) / Vector3.Angle( Vector3.up, Quaternion.AngleAxis( _rotationAngleMax, _modelTransform.forward ) * Vector3.up );
+    _forwardForcePoint.localPosition = Vector3.Lerp( _forwardForcePointStartPos, _forwardForcePointStartPos.setY( -_maxDeepForForwardForcePoint ), normalizedRotationDiff );
   }
   #endregion
 }

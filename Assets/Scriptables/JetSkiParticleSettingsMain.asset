@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: JetSkiParticleSettingsMain
   m_EditorClassIdentifier: 
   Power: 1
-  EnableAtSpeed: 50
+  EnableAtSpeed: 0
   StartSpeed:
-    min: 0.36968505
-    max: 1.4615543
+    min: 0.54321957
+    max: 3.9364626
   StartLifetime:
     min: 0
-    max: 0.8890885
+    max: 0.59626263
   ScaleLimits:
-    min: 2.5517676
+    min: 0
     max: 4.819888

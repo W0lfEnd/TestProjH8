@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviour
   void Update()
   {
     _playerVFX.ForwardSpeed = _playerMovement.ForwardSpeed;
+    _playerVFX.EnableParticles = _playerInput.CurrentVerticalInput != null;
 
     _playerMovement.RawInputRotationAngle = _playerInput.CurrentHorizontalInput.GetValueOrDefault( 0.0f );
     _playerMovement.RawInputSpeedForce = _playerInput.CurrentVerticalInput.GetValueOrDefault( 0.0f );
@@ -35,6 +36,7 @@ public class PlayerController : MonoBehaviour
   #region Private Methods
   private void onTouchingWaterStateChanged( bool state )
   {
+    _playerMovement.CanMove = state;
     _playerVFX.UseWaterParticles = state;
   }
 
